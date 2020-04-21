@@ -94,6 +94,30 @@
                         s += `</select>`;
                         s += `&nbsp;&nbsp;&nbsp;<input type="text" id="vyhledat"><input type="button" value="Vyhledat" onclick="dbStudenti()">`;
                         document.getElementById("div_tridy").innerHTML = s;
+                        document.getElementById("div_pridej").style.display = "block";
+                    }
+                }).catch((error) => {
+                    ukazChybu(error);
+                });
+            });
+        }
+        function ulozStudenta() {
+            let t = document.getElementById("tridy").value;
+            if (t === "-" || t === "") {
+                alert("Vyber konkrétní třídu");
+                return;
+            }
+            let j = document.getElementById("jmeno").value;
+            let p = document.getElementById("prijmeni").value;
+            let c = document.getElementById("cislo").value;
+            let url = `${HOST}/db/pridejStudenta?trida=${t}&jmeno=${j}&prijmeni=${p}&cislo=${c}`;
+            fetch(url).then(function (response) {
+                response.text().then(function (text) {
+                    let obj = JSON.parse(text);
+                    if (obj.error) {
+                        document.getElementById("div_studenti").innerHTML = obj.error;
+                    } else {
+                        dbStudenti();
                     }
                 }).catch((error) => {
                     ukazChybu(error);
@@ -136,9 +160,14 @@
                         document.getElementById("div_studenti").innerHTML = obj.error;
                     } else {
                         let s = ``;
+                        let maxCislo = 0;
                         for (let st of obj.studenti) {
                             s += `[<a href="JavaScript:smazStudenta(${st.id})">X</a>] ${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<br>`;
+                            if (st.cislo_podle_tridnice > maxCislo) {
+                                maxCislo = st.cislo_podle_tridnice;
+                            }
                         }
+                        document.getElementById("cislo").valueAsNumber = maxCislo + 1;
                         document.getElementById("div_studenti").innerHTML = s;
                     }
                 }).catch((error) => {
@@ -162,6 +191,14 @@ dne <input type="date" id="datum2" onchange="ukazDen2()"> byl(a/o)/bude <span id
 <img src="res/nodejs.png" title="obrázek">
 
 <h2>Příklad použití MySQL - školní třídy a studenti</h2>
+
+<div id="div_pridej" style="display: none">
+    Jméno: <input type="text" id="jmeno">
+    Příjmení: <input type="text" id="prijmeni">
+    Číslo v třídnici: <input type="number" id="cislo" min="1" max="99">
+    <input type="button" value="Ulož" onclick="ulozStudenta()">
+    <br><br>
+</div>
 
 <div id="div_tridy"><input type="button" value="Načti třídy" onclick="dbTridy()"></div>
 <div id="div_studenti"></div>

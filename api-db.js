@@ -37,6 +37,22 @@ exports.apiDb = function (req, res, obj) {
                 res.end(JSON.stringify(obj));
             }
         );
+    } else if (req.pathname.endsWith("/pridejStudenta")) {
+        let j = req.parameters.jmeno;
+        let p = req.parameters.prijmeni;
+        let t = req.parameters.trida;
+        let c = req.parameters.cislo;
+        let qry = "INSERT INTO spaserverexample_studenti (tridy_id, jmeno, prijmeni, cislo_podle_tridnice, stav) VALUES ('"+t+"', '"+j+"', '"+p+"', '"+c+"', '1');";
+        connection.query(qry,
+            function(err, rows){
+                if (err) {
+                    console.error(JSON.stringify({status: "Error", error: err}));
+                    obj.error = JSON.stringify(err);
+                } else {
+                }
+                res.end(JSON.stringify(obj));
+            }
+        );
     } else if (req.pathname.endsWith("/smazStudenta")) {
 //        let qry = "DELETE FROM spaserverexample_studenti WHERE id="+req.parameters.id;
         let qry = "UPDATE spaserverexample_studenti SET stav = '2' WHERE id="+req.parameters.id;
