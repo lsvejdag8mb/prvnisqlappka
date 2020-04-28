@@ -110,7 +110,11 @@
             let j = document.getElementById("jmeno").value;
             let p = document.getElementById("prijmeni").value;
             let c = document.getElementById("cislo").value;
-            let url = `${HOST}/db/pridejStudenta?trida=${t}&jmeno=${j}&prijmeni=${p}&cislo=${c}`;
+            let url = `${HOST}/db/pridejStudenta?`;
+            if (edit_id) {
+                url = `${HOST}/db/ulozStudenta?id=${edit_id}&`;
+            }
+            url = url + `trida=${t}&jmeno=${j}&prijmeni=${p}&cislo=${c}`;
             fetch(url).then(function (response) {
                 response.text().then(function (text) {
                     let obj = JSON.parse(text);
@@ -118,6 +122,25 @@
                         document.getElementById("div_studenti").innerHTML = obj.error;
                     } else {
                         dbStudenti();
+                    }
+                }).catch((error) => {
+                    ukazChybu(error);
+                });
+            });
+        }
+        let edit_id; //id editovaneho studenta
+        function upravStudenta(id) {
+            edit_id = id;
+            let url = `${HOST}/db/detailStudenta?id=${id}`;
+            fetch(url).then(function (response) {
+                response.text().then(function (text) {
+                    let obj = JSON.parse(text);
+                    if (obj.error) {
+                        document.getElementById("div_studenti").innerHTML = obj.error;
+                    } else {
+                        document.getElementById("jmeno").value = obj.student.jmeno;
+                        document.getElementById("prijmeni").value = obj.student.prijmeni;
+                        document.getElementById("cislo").value = obj.student.cislo_podle_tridnice;
                     }
                 }).catch((error) => {
                     ukazChybu(error);
@@ -140,6 +163,9 @@
             });
         }
         function dbStudenti() {
+            edit_id = undefined; //kvuli moznosti vlozeni noveho studenta
+            document.getElementById("jmeno").value = ""; //pokud jsem editoval nebo pridaval, tak vymazu
+            document.getElementById("prijmeni").value = ""; //pokud jsem editoval nebo pridaval, tak vymazu
             let url = `${HOST}/db/studenti?`;
             let t = document.getElementById("tridy").value;
             if (t == "-") { //nic
@@ -162,7 +188,7 @@
                         let s = ``;
                         let maxCislo = 0;
                         for (let st of obj.studenti) {
-                            s += `[<a href="JavaScript:smazStudenta(${st.id})">X</a>] ${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<br>`;
+                            s += `[<a href="JavaScript:upravStudenta(${st.id})">U</a>][<a href="JavaScript:smazStudenta(${st.id})">X</a>] ${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<br>`;
                             if (st.cislo_podle_tridnice > maxCislo) {
                                 maxCislo = st.cislo_podle_tridnice;
                             }
