@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Příklad použití modulu spaserver</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
     <script>
         const HOST = window.location.protocol + "//" + window.location.hostname + ((window.location.port) ? ":" + window.location.port : "");
 
@@ -94,7 +101,6 @@
                         s += `</select>`;
                         s += `&nbsp;&nbsp;&nbsp;<input type="text" id="vyhledat"><input type="button" value="Vyhledat" onclick="dbStudenti()">`;
                         document.getElementById("div_tridy").innerHTML = s;
-                        document.getElementById("div_pridej").style.display = "block";
                     }
                 }).catch((error) => {
                     ukazChybu(error);
@@ -121,6 +127,8 @@
                     if (obj.error) {
                         document.getElementById("div_studenti").innerHTML = obj.error;
                     } else {
+                        document.getElementById("div_pridej").style.display = "none";
+                        document.getElementById("div_studenti").style.display = "block";
                         dbStudenti();
                     }
                 }).catch((error) => {
@@ -130,6 +138,9 @@
         }
         let edit_id; //id editovaneho studenta
         function upravStudenta(id) {
+            document.getElementById("div_pridej").style.display = "block";
+            document.getElementById("div_studenti").style.display = "none";
+            if (id == undefined) return;
             edit_id = id;
             let url = `${HOST}/db/detailStudenta?id=${id}`;
             fetch(url).then(function (response) {
@@ -146,6 +157,13 @@
                     ukazChybu(error);
                 });
             });
+        }
+        function stornoStudenta() {
+            document.getElementById("jmeno").value = "";
+            document.getElementById("prijmeni").value = "";
+            document.getElementById("cislo").value = "";
+            document.getElementById("div_pridej").style.display = "none";
+            document.getElementById("div_studenti").style.display = "block";
         }
         function smazStudenta(id) {
             let url = `${HOST}/db/smazStudenta?id=${id}`;
@@ -185,14 +203,23 @@
                     if (obj.error) {
                         document.getElementById("div_studenti").innerHTML = obj.error;
                     } else {
-                        let s = ``;
+                        let s = `<table>`;
+                        s += `<tr style="background-color: silver"><th>Příjmení</th><th>Jméno</th><th>Třída</th><th>Číslo</th><th><a href="JavaScript:upravStudenta()" class="fa fa-plus-square-o"></a></th></tr>`;
                         let maxCislo = 0;
                         for (let st of obj.studenti) {
-                            s += `[<a href="JavaScript:upravStudenta(${st.id})">U</a>][<a href="JavaScript:smazStudenta(${st.id})">X</a>] ${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<br>`;
+                            s += `<tr>`;
+                            s += `<td>${st.prijmeni}</td>`;
+                            s += `<td>${st.jmeno}</td>`;
+                            s += `<td>${st.rocnik}.${st.oznaceni_tridy}</td>`;
+                            s += `<td>${st.cislo_podle_tridnice}</td>`;
+                            s += `<td><a href="JavaScript:upravStudenta(${st.id})" class="fa fa-edit"></a> <a href="JavaScript:smazStudenta(${st.id})" class="fa fa-minus-square-o"></a></td>`;
+                            s += `</tr>`;
+                            //s += `[<a href="JavaScript:upravStudenta(${st.id})">U</a>][<a href="JavaScript:smazStudenta(${st.id})">X</a>] ${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<br>`;
                             if (st.cislo_podle_tridnice > maxCislo) {
                                 maxCislo = st.cislo_podle_tridnice;
                             }
                         }
+                        s += `</table>`;
                         document.getElementById("cislo").valueAsNumber = maxCislo + 1;
                         document.getElementById("div_studenti").innerHTML = s;
                     }
@@ -219,10 +246,14 @@ dne <input type="date" id="datum2" onchange="ukazDen2()"> byl(a/o)/bude <span id
 <h2>Příklad použití MySQL - školní třídy a studenti</h2>
 
 <div id="div_pridej" style="display: none">
-    Jméno: <input type="text" id="jmeno">
-    Příjmení: <input type="text" id="prijmeni">
-    Číslo v třídnici: <input type="number" id="cislo" min="1" max="99">
-    <input type="button" value="Ulož" onclick="ulozStudenta()">
+    <fieldset>
+        <legend> Student </legend>
+        Jméno: <input type="text" id="jmeno">
+        Příjmení: <input type="text" id="prijmeni">
+        Číslo v třídnici: <input type="number" id="cislo" min="1" max="99">
+        <input type="button" value="Ulož" onclick="ulozStudenta()">
+        <input type="button" value="Storno" onclick="stornoStudenta()">
+    </fieldset>
     <br><br>
 </div>
 
