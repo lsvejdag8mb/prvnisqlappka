@@ -169,6 +169,7 @@
             document.getElementById("div_studenti").style.display = "block";
         }
         function smazStudenta(id) {
+            if (!confirm("Opravdu odstranit?")) return;
             let url = `${HOST}/db/smazStudenta?id=${id}`;
             fetch(url).then(function (response) {
                 response.text().then(function (text) {
